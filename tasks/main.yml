@@ -31,18 +31,24 @@
     - name: Create config subdirectory
       ansible.builtin.file:
         path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/config"
+        owner: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
+        group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
         state: directory
         mode: 'u=rwx,g=rx,o=rx'
 
     - name: Ensure letsencrypt directory exists
       ansible.builtin.file:
         path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/letsencrypt"
+        owner: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
+        group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
         state: directory
         mode: 'u=rwx,g=rx,o=rx'
 
     - name: Ensure ACME storage file exists
       ansible.builtin.file:
         path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/letsencrypt/acme.json"
+        owner: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
+        group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
         state: touch
         mode: 'u=rw,g=,o='
 
