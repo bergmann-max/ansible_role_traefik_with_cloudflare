@@ -4,3 +4,6 @@
 ansible_role_traefik_with_cloudflare_email: "mail@example.com"
 ansible_role_traefik_with_cloudflare_traefik_user: "traefik"
 ansible_role_traefik_with_cloudflare_traefik_group: "docker"
+ansible_role_traefik_with_cloudflare_docker_release: "latest"
+ansible_role_traefik_with_cloudflare_domain: "example.com"
+ansible_role_traefik_with_cloudflare_subdomain: "traefik"

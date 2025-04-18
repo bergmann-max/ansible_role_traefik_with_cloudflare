@@ -24,11 +24,19 @@
       ansible.builtin.file:
         path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}"
         state: directory
+        owner: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
+        group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
         mode: 'u=rwx,g=rx,o=rx'
 
     - name: Create config subdirectory
       ansible.builtin.file:
         path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/config"
+        state: directory
+        mode: 'u=rwx,g=rx,o=rx'
+
+    - name: Ensure letsencrypt directory exists
+      ansible.builtin.file:
+        path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/letsencrypt"
         state: directory
         mode: 'u=rwx,g=rx,o=rx'
 
@@ -52,6 +60,29 @@
         src: traefik.yml.j2
         dest: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/traefik.yml"
         mode: 'u=rw,g=r,o=r'
+
+    - name: Template dashboard.yml config
+      ansible.builtin.template:
+        src: dashboard.yml.j2
+        dest: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/config/dashboard.yml"
+        mode: 'u=rw,g=r,o=r'
+
+- name: Deploy Traefik stack via Docker Compose
+  tags: traefik_deploy
+  block:
+    - name: Ensure Docker Compose project directory exists
+      ansible.builtin.file:
+        path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}"
+        state: directory
+        mode: 'u=rwx,g=rx,o=rx'
+
+    - name: Deploy Docker Compose file
+      ansible.builtin.template:
+        src: "docker-compose.yml.j2"
+        dest: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/docker-compose.yml"
+        owner: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
+        group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
+        mode: 'u=rw,g=r,o=-'
 
 - name: Traefik systemd Service Setup
   tags: traefik_service_setup
@@ -81,11 +112,3 @@
       ansible.builtin.systemd:
         name: traefik-docker
         state: started
-
-- name: Deploy Traefik stack via Docker Compose
-  tags: traefik_deploy
-  block:
-    - name: Start Traefik stack with Docker Compose
-      community.docker.docker_compose:
-        project_src: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}"
-        state: present

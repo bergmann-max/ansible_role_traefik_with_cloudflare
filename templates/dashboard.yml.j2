@@ -1,0 +1,30 @@
+http:
+  routers:
+    traefik-dashboard:
+      rule: "Host(`{{ansible_role_traefik_with_cloudflare_subdomain}}{{ ansible_role_traefik_with_cloudflare_domain }}`) && (PathPrefix(`/dashboard`) || PathPrefix(`/api`))"
+      entryPoints:
+        - websecure
+      service: api@internal
+      middlewares:
+        - dashboard-auth
+      tls:
+        certResolver: cloudflare
+
+  middlewares:
+    dashboard-auth:
+      basicAuth:
+        users:
+# User: admin
+# Password: admin
+# IMPORTANT: Change the password before using in production!
+# To generate a secure hash, run:
+#   $ apt install apache2-utils
+#   $ htpasswd -nb admin 'your_secure_password'
+# Then copy the generated hash and replace the hash below:
+          - "admin:$apr1$UHxrmeEI$hlruVPrTv1hdsoGB1JVpX1"
+
+  redirect-to-dashboard:
+    redirectRegex:
+      regex: "^https://{{ ansible_role_traefik_with_cloudflare_subdomain }}\\.{{ ansible_role_traefik_with_cloudflare_domain | replace('.', '\\.') }}/$"
+      replacement: "https://{{ ansible_role_traefik_with_cloudflare_subdomain }}.{{ ansible_role_traefik_with_cloudflare_domain }}/dashboard/"
+      permanent: true
