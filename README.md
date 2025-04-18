@@ -22,10 +22,12 @@ The following variables can be set (see `defaults/main.yml`):
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `ansible_role_traefik_with_cloudflare_email` | `admin@example.com` | Email address for ACME registration |
-| `ansible_role_traefik_with_cloudflare_traefik_user` | `traefik` | Linux user to run the Traefik systemd unit |
-| `ansible_role_traefik_with_cloudflare_traefik_group` | `traefik` | Linux group for Traefik |
-| `ansible_role_traefik_with_cloudflare_docker_compose_dir` | `/opt/traefik` | Directory where Traefik's Docker Compose stack is deployed |
+| `ansible_role_traefik_with_cloudflare_email` | `mail@example.com` | Email address used for the ACME certificate registration (Let's Encrypt) |
+| `ansible_role_traefik_with_cloudflare_traefik_user` | `traefik` | Linux system user to run the Traefik container and own configuration files |
+| `ansible_role_traefik_with_cloudflare_traefik_group` | `docker` | Linux group assigned to the Traefik user (usually grants Docker access) |
+| `ansible_role_traefik_with_cloudflare_docker_release` | `latest` | Docker image tag for Traefik |
+| `ansible_role_traefik_with_cloudflare_domain` | `example.com` | Base domain used for certificate generation and routing |
+| `ansible_role_traefik_with_cloudflare_subdomain` | `traefik` | Subdomain used for accessing the Traefik dashboard (e.g., `traefik.example.com`) |
 
 ## Usage Example
 
