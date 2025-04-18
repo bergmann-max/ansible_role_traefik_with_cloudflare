@@ -1,7 +1,91 @@
 ---
-# roles/ansible_role_template/tasks/main.yml
+# roles/ansible_role_traefik_with_cloudflare/tasks/main.yml
 
-- name: Update repositories cache and install "foo" package
-  ansible.builtin.apt:
-    name: foo
-    update_cache: yes
+- name: Traefik System User Setup
+  tags: traefik_user_setup
+  block:
+    - name: Ensure traefik group exists
+      ansible.builtin.group:
+        name: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
+        system: true
+
+    - name: Ensure traefik system user exists
+      ansible.builtin.user:
+        name: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
+        group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
+        create_home: false
+        shell: /sbin/nologin
+        system: true
+
+- name: Prepare directories and credential files
+  tags: traefik_prepare
+  block:
+    - name: Ensure Traefik project directory exists
+      ansible.builtin.file:
+        path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}"
+        state: directory
+        mode: 'u=rwx,g=rx,o=rx'
+
+    - name: Create config subdirectory
+      ansible.builtin.file:
+        path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/config"
+        state: directory
+        mode: 'u=rwx,g=rx,o=rx'
+
+    - name: Ensure ACME storage file exists
+      ansible.builtin.file:
+        path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/letsencrypt/acme.json"
+        state: touch
+        mode: 'u=rw,g=,o='
+
+- name: Template Traefik configuration files
+  tags: traefik_config
+  block:
+    - name: Template docker-compose file
+      ansible.builtin.template:
+        src: docker-compose.yml.j2
+        dest: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/docker-compose.yml"
+        mode: 'u=rw,g=r,o=r'
+
+    - name: Template traefik.yml config
+      ansible.builtin.template:
+        src: traefik.yml.j2
+        dest: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/traefik.yml"
+        mode: 'u=rw,g=r,o=r'
+
+- name: Traefik systemd Service Setup
+  tags: traefik_service_setup
+  block:
+    - name: Ensure systemd directory exists
+      ansible.builtin.file:
+        path: /etc/systemd/system/
+        state: directory
+        mode: 'u=rwx,g=rx,o=rx'
+
+    - name: Deploy Traefik systemd service
+      ansible.builtin.template:
+        src: traefik-docker.service.j2
+        dest: /etc/systemd/system/traefik-docker.service
+        owner: root
+        group: root
+        mode: 'u=rw,g=r,o=r'
+      notify: Reload systemd
+
+    - name: Enable Traefik service
+      ansible.builtin.systemd:
+        name: traefik-docker
+        enabled: true
+        daemon_reload: true
+
+    - name: Start Traefik service
+      ansible.builtin.systemd:
+        name: traefik-docker
+        state: started
+
+- name: Deploy Traefik stack via Docker Compose
+  tags: traefik_deploy
+  block:
+    - name: Start Traefik stack with Docker Compose
+      community.docker.docker_compose:
+        project_src: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}"
+        state: present

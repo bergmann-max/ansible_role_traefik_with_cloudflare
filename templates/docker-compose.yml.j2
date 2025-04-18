@@ -1,0 +1,24 @@
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./config:/etc/traefik/config:ro
+      - ./letsencrypt:/letsencrypt
+    env_file:
+      - .env
+    labels:
+      - "traefik.enable=true"
+    networks:
+      - traefik
+
+networks:
+  traefik:
+    external: false

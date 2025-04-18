@@ -1,2 +1,6 @@
 ---
-# roles/ansible_role_template/defaults/main.yml
+# roles/ansible_role_traefik_with_cloudflare/defaults/main.yml
+
+ansible_role_traefik_with_cloudflare_email: "mail@example.com"
+ansible_role_traefik_with_cloudflare_traefik_user: "traefik"
+ansible_role_traefik_with_cloudflare_traefik_group: "docker"

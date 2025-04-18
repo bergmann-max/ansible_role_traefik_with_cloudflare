@@ -1,16 +1,24 @@
 ---
-# roles/ansible_role_template/meta/main.yml
+# roles/ansible_role_traefik_with_cloudflare/meta/main.yml
 
 galaxy_info:
   author: Max Bergmann
-  description: An Ansible role template
-  license: MIT
-  min_ansible_version: "2.9"
+  description: >
+    Ansible role to deploy Traefik with Docker and automatic HTTPS using
+    Cloudflare DNS challenge – based on environment variables for API token.
+  license: Unlicense
+  min_ansible_version: "2.11"
   platforms:
     - name: Ubuntu
       versions:
         - all
   galaxy_tags:
-    - foo
-    - bar
+    - traefik
+    - docker
+    - cloudflare
+    - reverse-proxy
+    - acme
+    - dns
+    - https
+
 dependencies: []
