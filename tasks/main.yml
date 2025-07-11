@@ -65,12 +65,16 @@
       ansible.builtin.template:
         src: traefik.yml.j2
         dest: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/traefik.yml"
+        owner: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
+        group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
         mode: 'u=rw,g=r,o=r'
 
     - name: Template dashboard.yml config
       ansible.builtin.template:
         src: dashboard.yml.j2
         dest: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/config/dashboard.yml"
+        owner: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
+        group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
         mode: 'u=rw,g=r,o=r'
 
 - name: Deploy Traefik stack via Docker Compose
@@ -79,6 +83,8 @@
     - name: Ensure Docker Compose project directory exists
       ansible.builtin.file:
         path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}"
+        owner: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
+        group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
         state: directory
         mode: 'u=rwx,g=rx,o=rx'
 
@@ -89,6 +95,20 @@
         owner: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
         group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
         mode: 'u=rw,g=r,o=-'
+
+    - name: Check whether .env already exists
+      ansible.builtin.stat:
+        path: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/.env"
+      register: env_file
+
+    - name: Copy exaple.env if no .env exists
+      ansible.builtin.copy:
+        src: exaple.env
+        dest: "{{ ansible_role_traefik_with_cloudflare_docker_compose_dir }}/example.env"
+        owner: "{{ ansible_role_traefik_with_cloudflare_traefik_user }}"
+        group: "{{ ansible_role_traefik_with_cloudflare_traefik_group }}"
+        mode: 'u=rw,g=r,o=-'
+      when: not env_file.stat.exists
 
 - name: Traefik systemd Service Setup
   tags: traefik_service_setup
